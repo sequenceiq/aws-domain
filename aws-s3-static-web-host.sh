@@ -104,14 +104,35 @@ KOMMENT
     
     debug "Set nameserver at your domain registrar:"
     aws route53 get-hosted-zone --id $DOMAINID --query DelegationSet.NameServers --out text|xargs -n 1
+
+    #list AWS hosted domainnames:
+    #aws route53domains list-domains --region us-east-1 --query Domains[].DomainName --out text
+}
+
+register_domain() {
+    declare desc="register domain at AWS"
+
+    local availabilty=$(
+        aws route53domains check-domain-availability --region us-east-1  --domain-name $MYDOMAIN --query Availability --out text
+    )
+    debug "$MYDOMAIN is: $availabilty"
+
+    if [[ "$availabilty" != "AVAILABLE" ]];then
+        echo "=====> Upps, you have missed it $MYDOMAIN is $availabilty"
+        exit 1
+    fi
+
+    # aws route53domains register-domain ...
 }
 
 main() {
   : ${DEBUG:=1}
   : ${MYDOMAIN:? reuired}
 
+  register_domain
   #create_buckets
-  create_dns
+  #create_dns
+  
 }
 
 [[ "$0" == "$BASH_SOURCE" ]] && main "$@" || true
