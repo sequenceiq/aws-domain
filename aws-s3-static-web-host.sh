@@ -97,9 +97,9 @@ create_dns() {
     DOMAINID=$(get_hosted_zone_id)
     if ! [[ "$DOMAINID" ]]; then
         debug "Creating hosted zone for: $MYDOMAIN"
-    aws route53 create-hosted-zone \
-        --name $MYDOMAIN \
-        --caller-reference $(date +%Y-%m-%d--%H%M)
+        aws route53 create-hosted-zone \
+            --name $MYDOMAIN \
+            --caller-reference $(date +%Y-%m-%d--%H%M)
     fi
     
     DOMAINID=$(get_hosted_zone_id)
@@ -107,12 +107,13 @@ create_dns() {
     
     debug "DomainId: $DOMAINID"
 
-    : << KOMMENT
-    aws route53 change-resource-record-sets \
-        --hosted-zone-id $DOMAINID \
-        --change-batch file://<(recordset_alias "${MYDOMAIN}." )
-KOMMENT
-    
+    for domainAlias in "${MYDOMAIN}." "www.${MYDOMAIN}."; do
+        debug "creating alias for: $domainAlias"
+        aws route53 change-resource-record-sets \
+            --hosted-zone-id $DOMAINID \
+            --change-batch file://<(recordset_alias "${domainAlias}" )
+    done
+
     debug "Set nameserver at your domain registrar:"
     aws route53 get-hosted-zone --id $DOMAINID --query DelegationSet.NameServers --out text|xargs -n 1
 
