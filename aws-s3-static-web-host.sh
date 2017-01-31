@@ -55,6 +55,9 @@ create_buckets() {
     aws s3api put-bucket-website --bucket www.$MYDOMAIN --website-configuration file://<(redirect_www)
 }
 
+# For DNS aliases use simple A records and point to region specific s3 endpoint
+# The region specific s3 endpoint dns nameserver's corresponding HostedZoneIds listed:
+#   http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_website_region_endpoints
 recordset_alias() {
     declare domainAlias=$1
 
@@ -68,7 +71,7 @@ recordset_alias() {
         "Name": "$domainAlias",
         "Type": "A",
         "AliasTarget": {
-          "HostedZoneId": "$DOMAINID",
+          "HostedZoneId": "Z21DNDUVLTQW6Q",
           "DNSName": "s3-website.eu-central-1.amazonaws.com.",
           "EvaluateTargetHealth": false
         }
