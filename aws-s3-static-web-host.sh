@@ -114,6 +114,13 @@ create_dns() {
 
     for domainAlias in "${MYDOMAIN}." "www.${MYDOMAIN}."; do
         debug "creating alias for: $domainAlias"
+
+        local existingRecord=$(aws route53 list-resource-record-sets  --hosted-zone-id $DOMAINID --query 'ResourceRecordSets[? Name ==`'$domainAlias'` && Type == `A`].Name' --out text)
+        debug existingRecord=$existingRecord
+        if [[ "$existingRecord" ]]; then
+            debug "DNS A record for: $domainAlias already exists ..."
+            continue
+        fi
         aws route53 change-resource-record-sets \
             --hosted-zone-id $DOMAINID \
             --change-batch file://<(recordset_alias "${domainAlias}" )
