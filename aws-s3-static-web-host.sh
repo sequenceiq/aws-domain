@@ -82,19 +82,27 @@ recordset_alias() {
 EOF
 }
 
+get_hosted_zone_id() {
+    aws route53 list-hosted-zones-by-name \
+        --dns-name $MYDOMAIN \
+        --query HostedZones[0].Id \
+        --out text
+}
+
 create_dns() {
     declare desc="creates route53 hosted zone, and aliases"
 
     debug "$desc"
-    : << KOMMENT
+
+    DOMAINID=$(get_hosted_zone_id)
+    if ! [[ "$DOMAINID" ]]; then
+        debug "Creating hosted zone for: $MYDOMAIN"
     aws route53 create-hosted-zone \
         --name $MYDOMAIN \
         --caller-reference $(date +%Y-%m-%d--%H%M)
-KOMMENT
+    fi
     
-    DOMAINID=$(
-        aws route53 list-hosted-zones-by-name --dns-name $MYDOMAIN --query HostedZones[0].Id --out text
-    )
+    DOMAINID=$(get_hosted_zone_id)
     DOMAINID=${DOMAINID##*/}
     
     debug "DomainId: $DOMAINID"
