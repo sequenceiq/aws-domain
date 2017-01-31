@@ -44,6 +44,11 @@ create_buckets() {
 
     debug "$desc"
     for bucket in $MYDOMAIN www.$MYDOMAIN; do
+
+        if aws s3api get-bucket-location --bucket $bucket;then
+            debug "bucket: $bucket already exsts ..."
+            continue
+        fi
         aws s3 mb s3://$bucket
         index_html
         aws s3 cp --acl public-read index.html s3://$bucket
