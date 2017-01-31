@@ -211,7 +211,12 @@ register_domain() {
 
     if [[ "$availabilty" != "AVAILABLE" ]];then
         echo "=====> Upps, you have missed it $MYDOMAIN is $availabilty"
-        exit 1
+        return
+    fi
+
+    if aws route53domains list-domains --region us-east-1 --query 'Domains[].DomainName' --out text | grep -q $MYDOMAIN; then
+        debug "You g=have already registered: $MYDOMAIN ..."
+        return
     fi
 
     register_json > register.json
@@ -225,8 +230,8 @@ main() {
   : ${MYDOMAIN:? reuired}
 
   register_domain
-  #create_buckets
-  #create_dns
+  create_buckets
+  create_dns
   
 }
 
