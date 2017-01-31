@@ -109,6 +109,77 @@ KOMMENT
     #aws route53domains list-domains --region us-east-1 --query Domains[].DomainName --out text
 }
 
+register_json() {
+    : ${AutoRenew:=false}
+    : ${DurationInYears:=1}
+    
+    : ${FirstName:? required}
+    : ${LastName:? required}
+    : ${ContactType:? required}
+    : ${OrganizationName:? required}
+    : ${AddressLine1:? required}
+    : ${AddressLine2:? required}
+    : ${City:? required}
+    : ${State:? required}
+    : ${CountryCode:? required}
+    : ${ZipCode:? required}
+    : ${PhoneNumber:? required}
+    : ${Email:? required}
+
+    cat <<EOF
+{
+    "DomainName": "$MYDOMAIN",
+    "DurationInYears": 1,
+    "AutoRenew": ${AutoRenew},
+    "AdminContact": {
+        "FirstName": "${FirstName}",
+        "LastName": "${LastName}",
+        "ContactType": "${ContactType}",
+        "OrganizationName": "${OrganizationName}",
+        "AddressLine1": "${AddressLine1}",
+        "AddressLine2": "${AddressLine2}",
+        "City": "${City}",
+        "State": "${State}",
+        "CountryCode": "${CountryCode}",
+        "ZipCode": "${ZipCode}",
+        "PhoneNumber": "${PhoneNumber}",
+        "Email": "${Email}"
+    },
+    "RegistrantContact": {
+        "FirstName": "${FirstName}",
+        "LastName": "${LastName}",
+        "ContactType": "${ContactType}",
+        "OrganizationName": "${OrganizationName}",
+        "AddressLine1": "${AddressLine1}",
+        "AddressLine2": "${AddressLine2}",
+        "City": "${City}",
+        "State": "${State}",
+        "CountryCode": "${CountryCode}",
+        "ZipCode": "${ZipCode}",
+        "PhoneNumber": "${PhoneNumber}",
+        "Email": "${Email}"
+    },
+    "TechContact": {
+        "FirstName": "${FirstName}",
+        "LastName": "${LastName}",
+        "ContactType": "${ContactType}",
+        "OrganizationName": "${OrganizationName}",
+        "AddressLine1": "${AddressLine1}",
+        "AddressLine2": "${AddressLine2}",
+        "City": "${City}",
+        "State": "${State}",
+        "CountryCode": "${CountryCode}",
+        "ZipCode": "${ZipCode}",
+        "PhoneNumber": "${PhoneNumber}",
+        "Email": "${Email}"
+    },
+    "PrivacyProtectAdminContact": true,
+    "PrivacyProtectRegistrantContact": true,
+    "PrivacyProtectTechContact": true
+}
+EOF
+}
+
 register_domain() {
     declare desc="register domain at AWS"
 
@@ -122,7 +193,10 @@ register_domain() {
         exit 1
     fi
 
-    # aws route53domains register-domain ...
+    register_json > register.json
+    aws route53domains register-domain \
+        --region us-east-1 \
+        --cli-input-json file://register.json
 }
 
 main() {
